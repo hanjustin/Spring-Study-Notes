@@ -3,7 +3,10 @@
 * Spring Boot
 * Core Technologies
     * IoC
-    * Beans
+    * [Beans](#beans)
+        * [Registering to the Spring context](#registering-to-the-spring-context)
+            * [`@Bean`](#bean)
+            * [`@Component`](#component)
         * Scope
     * Configurations
     * AOP (Aspect Oriented Programming)
@@ -13,15 +16,56 @@
 
 # Spring Boot
 
-Opinionated framework on top of Spring framework with default configurations for a quick backend development.
+* Opinionated framework on top of Spring framework with default configurations for a quick backend development.
+* Use annotations instead of XML for configuration.
 
 # Core Technologies
 
 ## IoC
-Manage lifecycle of java objects. `ApplicationContext` represents the IoC container.
+Manage lifecycle of java objects. Spring context `ApplicationContext` represents the IoC container. Objects that are known to the Spring context gets used by the framework the way it was configured.
 
 ## Beans
 Objects managed by the Spring framework.
+
+### Registering to the Spring context
+
+#### `@Bean`
+
+* Can be even used to a class not defined in my project.
+
+```java
+@Configuration
+public class MyConfig {
+
+    //Method name used as the default bean name.
+    @Bean(name = "customName")
+    public MyClass myClass() {
+        return new MyClass();
+    }
+}
+```
+
+#### `@Component`
+
+* Use `@ComponentScan` to scan for `@Component`
+* Use `@PostConstruct` to manage the instance after creation
+
+```java
+@Component
+public class MyClass {
+
+    @PostConstruct
+    public void doSomething() {
+
+    }
+}
+
+@Configuration
+@ComponentScan
+public class MyConfig {
+
+}
+```
 
 ## Configurations
 
