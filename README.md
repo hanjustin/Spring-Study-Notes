@@ -13,7 +13,9 @@
                 * [Field injection](#field-injection)
                 * [Setter injection](#setter-injection)
                 * [Constructor injection](#constructor-injection)
-        * Scope
+        * [Scope](#scope)
+            * [Singleton bean (Default)](#singleton-bean-default)
+            * [Prototype bean `@scope("prototype")`](#prototype-bean-scopeprototype)
     * Configurations
     * AOP (Aspect Oriented Programming)
 * Spring Security
@@ -161,6 +163,22 @@ public class Driver {
     // Omitted getter
 }
 ```
+
+### Scope
+
+#### Singleton bean (Default)
+* Can have multiple instances of the same type and always get the same instance when using ID of a specific bean. Not to be confused with singleton design pattern.
+* For stateless beans. Recommend immutability to avoid a race conditions.
+* Instantiation approaches:
+    * **Eager (Default)**
+        * Instantiate all singleton beans when initializing the context.
+    * **Lazy (Use `@Lazy`)**
+        * Instantiate bean when it gets used the first time.
+
+#### Prototype bean `@scope("prototype")`
+
+* A different instance every time the same bean name requested from the container.
+* Useful for stateful beans.
 
 ## Configurations
 
