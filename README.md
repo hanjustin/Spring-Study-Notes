@@ -7,6 +7,12 @@
         * [Registering to the Spring context](#registering-to-the-spring-context)
             * [`@Bean`](#bean)
             * [`@Component`](#component)
+        * [Relationships establishment](#relationships-establishment)
+            * [Wiring](#wiring)
+            * [Auto-wiring w/ `@Autowired`](#auto-wiring-w-autowired)
+                * [Field injection](#field-injection)
+                * [Setter injection](#setter-injection)
+                * [Constructor injection](#constructor-injection)
         * Scope
     * Configurations
     * AOP (Aspect Oriented Programming)
@@ -64,6 +70,95 @@ public class MyClass {
 @ComponentScan
 public class MyConfig {
 
+}
+```
+
+### Relationships establishment
+
+#### Wiring
+
+* Accessing a bean by directly calling `@Bean` annotated method
+* Receiving a bean by defining a parameter to the method creating the relationship 
+
+```java
+/*
+ * Only one Car instance is created in the context.
+ * Spring uses the same instance even with multiple calls to car().
+ * Similar to SwiftUI's single source of truth.
+ */
+
+@Configuration
+public class MyConfig {
+
+    @Bean
+    public Car car() {
+        return new car();
+    }
+
+    @Bean
+    public Driver driver1() {
+        Driver me = new Driver();
+        me.setCar(car()); // Directly calling car()
+        return me;
+    }
+
+    @Bean
+    public Driver driver2(Car c) { // Spring injects car here
+        Driver me = new Driver();
+        me.setCar(c);
+        return me;
+    }
+}
+```
+
+#### Auto-wiring w/ `@Autowired`
+
+##### Field injection
+
+* Quick & easy, but not recommended.
+* Hides the dependencies of the class.
+* Lack of immutability. A final field can't be used with `@Autowired`.
+* Harder to test
+
+```java
+@Component
+public class Driver {
+
+    @Autowired
+    private Car car;
+}
+```
+
+##### Setter injection
+
+```java
+@Component
+public class Driver {
+
+    private Car car;
+
+    @Autowired
+    public void setCar(Car car) {
+        this.car = car;
+    }
+}
+```
+
+##### Constructor injection
+
+* If only one constructor, `@Autowired` can be omitted.
+
+```java
+@Component
+public class Driver {
+
+    private final Car car;  // Can use final
+
+    public Driver(Car car) {
+        this.car = car;
+    }
+
+    // Omitted getter
 }
 ```
 
