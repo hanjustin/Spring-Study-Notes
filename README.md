@@ -2,20 +2,25 @@
 # Table of Contents
 * Spring Boot
 * Core Technologies
-    * IoC
+    * **[IoC container](#ioc-container)**
+        * **Types**
+            * [BeanFactory](#beanfactory), [ApplicationContext](#applicationcontext)
+        * **Configuration**
+            * [XML-based](#xml-based), `@Configuration`
     * **[Beans](#beans)**
-        * **[Registering](#registering)**
-            * [`@Bean`](#bean), [`@Component`](#component)
-        * **[Dependency](#dependency)**
+        * **Registering**
+            * Method level - [`@Bean`](#bean)
+            * Class level (Stereotype) - [`@Component`](#component), `@Controller`, `@Service`, `@Repository`
+        * **Dependency**
             * [Wiring](#wiring)
             * [Auto-wiring w/ `@Autowired`](#auto-wiring-w-autowired)
                 * [Field](#field-injection), [Setter](#setter-injection), [Constructor](#constructor-injection) injection
         * **[Preference](#preference)**
-            * `@Qualifier`, `@Primary`
-        * **[Scope](#scope)**
+            * [Selection order](#selection-order)
+                * `@Qualifier(ID)`, `@Primary`
+        * **Scope**
             * [Singleton](#singleton-bean-default), [Prototype](#prototype-bean-scopeprototype)
-    * Configurations
-    * AOP (Aspect Oriented Programming)
+    * **[AOP (Aspect Oriented Programming)](#aop-aspect-oriented-programming)**
 * Spring Security
 * Tools
     * **[Maven](#maven)**
@@ -27,8 +32,51 @@
 
 # Core Technologies
 
-## IoC
-Manage lifecycle of java objects. Spring context `ApplicationContext` represents the IoC container. Objects that are known to the Spring context gets used by the framework the way it was configured.
+## IoC container
+* Use dependency injection to manage life cycle of objects known to the container.
+
+### Types
+#### BeanFactory
+* The most basic container.
+* Load beans on-demand. Only supports singleton & prototype bean scopes.
+
+#### ApplicationContext
+* Extends the features of `BeanFactory`
+* Load all beans at startup. Supports all types of bean scopes.
+
+### Configuration
+
+#### XML-based
+
+```xml
+<!-- Creating two beans. IDs are myBean & anotherBean -->
+
+<beans xmlns="..." xmlns:xsi="..." xsi:schemaLocation="...">
+
+    <bean id="myBean" class="com.example.MyClass">
+        <property name="propertyName" value="Hello World!">
+        <property name="anotherObj" ref="anotherBean">
+    </bean>
+
+    <bean id="anotherBean" class="com.example.AnotherClass">
+</beans>
+```
+
+```java
+public class MyClass {
+    private String propertyName;
+    private AnotherClass anotherObj;
+
+    // Omitted getter & setter
+}
+
+public class AnotherClass {
+
+}
+```
+
+#### `@Configuration`
+* Used to indicate a source of `@bean` methods.
 
 ## Beans
 Objects managed by the Spring framework.
@@ -50,7 +98,8 @@ public class MyConfig {
 }
 ```
 
-#### `@Component`
+#### Stereotype annotations
+##### `@Component`
 * Use `@ComponentScan` to scan for `@Component`
 * Use `@PostConstruct` to manage the instance after creation
 
@@ -160,11 +209,12 @@ public class Driver {
 ### Preference
 * When multiple beans of the same type exist, Spring needs to know which one to choose and inject.
 
-    **Preference selection order:**
-    1. `@Qualifier`
-    2. Bean with `@Primary`
-    3. Bean with name matching parameter name or property name.
-    4. Error if none of the above were used to specify a bean.
+#### Selection order
+1. `@Qualifier`
+2. Bean with `@Primary`
+    * When both `@Qualifier` and `@Primary` are present, then the `@Qualifier` annotation will have precedence. Basically, `@Primary` defines a default, while `@Qualifier` is very specific.
+3. Parameter, property, or class name gets used as Bean's name.
+4. Error if none of the above were used to specify a bean.
 
 ```java
 /*
@@ -228,8 +278,6 @@ public class MyConfig {
 #### Prototype bean `@scope("prototype")`
 * A different instance every time the same bean name requested from the container.
 * Useful for stateful beans.
-
-## Configurations
 
 ## AOP (Aspect Oriented Programming)
 Separating cross-cutting concerns from the business logic code for increasesd code modularity. Cross-cutting concerns are aspects of a program that affect multiple parts of the application, such as logging, security, or transaction management. These concerns can lead to code duplication and tangled code if not handled properly. This modularization helps keep the business logic clean and uncluttered by separating the additional functionalities into aspects.
