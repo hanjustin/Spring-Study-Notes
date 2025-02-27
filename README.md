@@ -1,4 +1,10 @@
 
+# Study Resources
+
+- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 7
+- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
+- [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
+
 # Table of Contents
 * Spring Boot
 * Core Technologies
@@ -21,6 +27,9 @@
         * **Scope**
             * [Singleton](#singleton-bean-default), [Prototype](#prototype-bean-scopeprototype)
     * **[AOP (Aspect Oriented Programming)](#aop-aspect-oriented-programming)**
+        * [`@Aspect`](#aspect)
+        * **Concepts**
+            * [Aspect](#aspect-1), [Advice](#advice), [Pointcut](#pointcut), [Join point](#join-point), [Weaving](#weaving), [Proxy object](#proxy-object)
 * Spring Security
 * Tools
     * **[Maven](#maven)**
@@ -76,7 +85,7 @@ public class AnotherClass {
 ```
 
 #### `@Configuration`
-* Used to indicate a source of `@bean` methods.
+* Used to indicate a source of `@Bean` methods.
 
 ## Beans
 Objects managed by the Spring framework.
@@ -275,12 +284,74 @@ public class MyConfig {
     * **Lazy (Use `@Lazy`)**
         * Instantiate bean when it gets used the first time.
 
-#### Prototype bean `@scope("prototype")`
+#### Prototype bean `@Scope("prototype")`
 * A different instance every time the same bean name requested from the container.
 * Useful for stateful beans.
 
 ## AOP (Aspect Oriented Programming)
-Separating cross-cutting concerns from the business logic code for increasesd code modularity. Cross-cutting concerns are aspects of a program that affect multiple parts of the application, such as logging, security, or transaction management. These concerns can lead to code duplication and tangled code if not handled properly. This modularization helps keep the business logic clean and uncluttered by separating the additional functionalities into aspects.
+* Separating business logic code from repetitious cross-cutting concerns code, such as logging, security, or transaction management, for increasesd code modularity.
+* Method calls are intercepted and altered using aspects to provide additional functionalities.
+
+### `@Aspect`
+
+```java
+@Aspect
+@Component
+public class MyLoggingAspect {
+
+    @Around("execution(* services.*.*(..))")
+    public void log(ProceedingJoinPoint joinPoint) {
+        joinPoint.proceed();
+    }
+}
+
+// Omitted MyConfig class with @EnableAspectJAutoProxy
+```
+
+### Concepts
+#### Aspect
+* **`What`** to execute when you call specific methods.
+
+#### Advice
+* **`When`** the aspect logic gets executed. (e.g., before or after the method call).
+* **Types**
+    * `@Before` - Run before the method execution.
+    * `@After` - Run after the method execution, regardless of its outcome.
+    * `@AfterReturning` - Run after the method execution, only if the method completes successfully.
+    * *`@AfterThrowing`* - Run if the method throws exception.
+    * `@Around` - Fully customize behaviors before & after the method execution. The original method execution could even be skipped if `joinPoint.proceed()` is not called. Avoid using `@Around` if other types are sufficient for your requirements.
+
+#### Pointcut
+* **`Which`** methods will execute the aspect logic. Methods matching pointcut expression/pattern will execute the aspect logic. (Similar concept to regular expression)
+* Empty method can be used to create a pointcut signature as a shorthand for advice annotations.
+* **Designators**
+    * `execution` - To pattern match method execution.
+    * `within` - To pattern match method in certain namespace (i.e. package or class).
+    * `@within` - To pattern match type of annotations on the namespace.
+    * `this` - To pattern match type of the bean reference. Used for CGLIB-based proxy.
+    * `target` - To pattern match type of the target object. Used for JDK-based proxy.
+    * `@target` - To pattern match type of annotations on the target object.
+    * `args` - To pattern match type of method arguments.
+    * `@args` - To pattern match annotations of method arguments.
+    * `@annotation` - To pattern match annotations of methods.
+    * `bean` - To pattern match id of bean.
+
+#### Join point
+* **`Trigger`** of the aspect logic. In Spring, always a method call.
+* `ProceedingJoinPoint` parameter of the aspect method represents the intercepted method, and this can be used to get any information related to the intercepted method
+
+```java
+public void methodInAspect(ProceedingJoinPoint joinPoint) {
+    String methodName = joinPoint.getSignature().getName();
+    Object[] arguments = joinPoint.getArgs();
+}
+```
+
+#### Weaving
+Linking the aspect logic & the original method dynamically at runtime to use the interface of the original method.
+
+#### Proxy object 
+Substitute object that intercepts the original method execution to use the aspect logic. Spring uses CGLIB or JDK dynamic proxy implementation.
 
 # Tools
 
