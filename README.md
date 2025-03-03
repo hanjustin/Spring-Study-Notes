@@ -5,7 +5,7 @@
 
 # Study Resources
 
-- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 8 of 15
+- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 9 of 15
 - [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
@@ -405,7 +405,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
 
 * **Book notes**
     * [Spring Start Here](#spring-start-here)
-        * Chapter [7](#7-spring-mvc)
+        * Chapter [7](#7-spring-mvc), [8](#8-spring-boot--spring-mvc)
     * Spring Security in Action
     * Spring in Action
 
@@ -442,3 +442,82 @@ Without Spring Boot, Spring web app needed a lot of configurations for a servlet
 * `@RequestMapping`: specifying the path. method needs to return the name of the document to send as a response.
 * Tomcat uses a servlet component known as the dispatcher servlet (front controller) as the entry point of the Spring web app.
 * Dispatcher servlet uses the handler mapping to find a controller action with `@RequestMapping` for the HTTP request. Then, the dispatcher servlet uses View resolver to get the view content.
+
+### 8 Spring Boot & Spring MVC
+#### 8.1 Dynamic view using template engines
+* Template engine: Dependency to display variable data the controller sends. Thymeleaf template engine used in this section.
+* `resources/templates` folder used for dynamic view. ${key} in html to get value of the attribute from `Model`. `@RequestMapping` method uses `Model` type as method parameter and returned string as view name
+
+```java
+@RequestMapping("/home")
+public String home(Model page) {
+    page.addAttribute("key", value);
+    return "home.html";
+}
+```
+
+##### 8.1.2 Request parameters to send data
+* For small or optional data. Often used for search & filter.
+* Use `@RequestParam` to get brand & honda `http://example.com/products?name=honda&color=blue`
+
+```java
+@RequestMapping("/home")
+public String home(
+      @RequestParam(required = false) String name,
+      @RequestParam(required = false) String color,
+      Model page) {
+    page.addAttribute("key", value);
+    return "home.html";
+}
+```
+
+##### 8.1.3 Path variables to send data
+
+```java
+@RequestMapping("/home/{color}")
+  public String home(
+      @PathVariable String color,
+      Model page) {
+    return "home.html";
+}
+```
+
+#### 8.2 HTTP GET and POST methods
+* Singleton beans aren’t thread-safe
+* `@RequestMapping` uses GET by default. Instead, can use `@GetMapping`, `@PostMapping`
+```java
+@RequestMapping(path = "/products",
+                method = RequestMethod.POST)
+```
+
+```java
+/*
+Can use the model class instead of @RequestParam
+if request parameters’ names are the same as
+the model class attributes’ names
+*/
+
+public class Product {
+  private String name;
+  private double price;
+  // Omitted getters and setters
+}
+
+@PostMapping("/products")
+public String addProduct(
+    @RequestParam String name,
+    @RequestParam double price,
+    Model model
+) {
+
+}
+
+// Shorthand form
+@PostMapping("/products")
+public String addProduct(
+    Product p,
+    Model model
+) {
+
+}
+```
