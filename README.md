@@ -1,7 +1,11 @@
 
+# [Unorganized Notes](#unorganized-notes-1)
+
+---
+
 # Study Resources
 
-- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 7
+- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 8 of 15
 - [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
@@ -9,35 +13,35 @@
 * Spring Boot
 * Core Technologies
     * **[IoC container](#ioc-container)**
-        * **Types**
-            * [BeanFactory](#beanfactory), [ApplicationContext](#applicationcontext)
-        * **Configuration**
-            * [XML-based](#xml-based), `@Configuration`
+        * **Types:** [BeanFactory](#beanfactory), [ApplicationContext](#applicationcontext)
+        * **Configuration:** [XML-based](#xml-based), `@Configuration`
     * **[Beans](#beans)**
         * **Registering**
-            * Method level - [`@Bean`](#bean)
-            * Class level (Stereotype) - [`@Component`](#component), `@Controller`, `@Service`, `@Repository`
+            * **Method level:** [`@Bean`](#bean)
+            * **Class level (Stereotype):** [`@Component`](#component), `@Controller`, `@Service`, `@Repository`
         * **Dependency**
             * [Wiring](#wiring)
-            * [Auto-wiring w/ `@Autowired`](#auto-wiring-w-autowired)
-                * [Field](#field-injection), [Setter](#setter-injection), [Constructor](#constructor-injection) injection
+            * Auto-wiring w/ `@Autowired`: [Field](#field-injection), [Setter](#setter-injection), [Constructor](#constructor-injection) injection
         * **[Preference](#preference)**
-            * [Selection order](#selection-order)
-                * `@Qualifier(ID)`, `@Primary`
+            * **[Selection order:](#selection-order)** `@Qualifier(ID)`, `@Primary`
         * **Scope**
             * [Singleton](#singleton-bean-default), [Prototype](#prototype-bean-scopeprototype)
     * **[AOP (Aspect Oriented Programming)](#aop-aspect-oriented-programming)**
         * [`@Aspect`](#aspect)
-        * **Concepts**
-            * [Aspect](#aspect-1), [Advice](#advice), [Pointcut](#pointcut), [Join point](#join-point), [Weaving](#weaving), [Proxy object](#proxy-object)
+        * **Concepts:** [Aspect](#aspect-1), [Advice](#advice), [Pointcut](#pointcut), [Join point](#join-point), [Weaving](#weaving), [Proxy object](#proxy-object)
 * Spring Security
 * Tools
     * **[Maven](#maven)**
-        * [Wrapper](#wrapper), [Build lifecycles](#build-lifecycles), [Directory layout](#directory-layout)
+        * `pom.xml`, [Wrapper](#wrapper), [Build lifecycles](#build-lifecycles), [Directory layout](#directory-layout)
 
 # Spring Boot
 * Opinionated framework on top of Spring framework with default configurations for a quick backend development.
 * Use annotations instead of XML for configuration.
+
+## Auto-configuration
+* To reduce the need for manual configuration, analyze classpath for auto-configurations. Use `application.properties` or `application.yml` to customize auto-configurations.
+    * **Aspect:** No need to add `@EnableAspectJAutoProxy`.
+    * **Embedded Web Servers:** Use Tomcat.
 
 # Core Technologies
 
@@ -291,6 +295,7 @@ public class MyConfig {
 ## AOP (Aspect Oriented Programming)
 * Separating business logic code from repetitious cross-cutting concerns code, such as logging, security, or transaction management, for increasesd code modularity.
 * Method calls are intercepted and altered using aspects to provide additional functionalities.
+* Multiple aspects can be added to a method. `@Order(#)` can specify aspect's order. Aspect with lower number given will execute first.
 
 ### `@Aspect`
 
@@ -325,7 +330,17 @@ public class MyLoggingAspect {
 * **`Which`** methods will execute the aspect logic. Methods matching pointcut expression/pattern will execute the aspect logic. (Similar concept to regular expression)
 * Empty method can be used to create a pointcut signature as a shorthand for advice annotations.
 * **Designators**
-    * `execution` - To pattern match method execution.
+    * `execution` - To pattern match method execution. Has format:
+    
+    ```
+    execution(modifiers-pattern?
+              return-type-pattern
+              declaring-type-pattern?
+              name-pattern(param-pattern)
+              throws-pattern?)
+    
+    // Modifiers, declaring-type, and throws patterns are optional
+    ```
     * `within` - To pattern match method in certain namespace (i.e. package or class).
     * `@within` - To pattern match type of annotations on the namespace.
     * `this` - To pattern match type of the bean reference. Used for CGLIB-based proxy.
@@ -338,12 +353,13 @@ public class MyLoggingAspect {
 
 #### Join point
 * **`Trigger`** of the aspect logic. In Spring, always a method call.
-* `ProceedingJoinPoint` parameter of the aspect method represents the intercepted method, and this can be used to get any information related to the intercepted method
+* `ProceedingJoinPoint` parameter of the aspect method represents the intercepted method, and this can be used to get any information related to the intercepted method.
 
 ```java
 public void methodInAspect(ProceedingJoinPoint joinPoint) {
     String methodName = joinPoint.getSignature().getName();
     Object[] arguments = joinPoint.getArgs();
+    joinPoint.proceed(); // Execute the next aspect or the intercepted method
 }
 ```
 
@@ -357,6 +373,8 @@ Substitute object that intercepts the original method execution to use the aspec
 
 ## Maven
 It is a project management and build automation tool. Maven projects are configured using a Project Object Model (POM) in a `pom.xml` file. The file contains information such as dependencies, source directory, plugin, etc.
+
+### `pom.xml`
 
 ### Wrapper
 Utility script to run the Maven project without having Maven installed. Ensures that the correct Maven version is used, providing consistency across different development environments.
@@ -376,3 +394,51 @@ Utility script to run the Maven project without having Maven installed. Ensures 
 * `src/main/resources` - Application/Library resources
 * `src/test/java` - Test sources
 * `target` - Contains all the final products from the build
+
+---
+
+# Unorganized Notes
+
+Added section to accelerate my learning pace by postponing knowledge organization effort to reduce my inefficient usage of time. To go fast and then revisit & re-organize learned concepts later.
+
+Listing of concepts I only know on the surface level that I don't even know where to organize in my head.
+
+* **Book notes**
+    * [Spring Start Here](#spring-start-here)
+        * Chapter [7](#7-spring-mvc)
+    * Spring Security in Action
+    * Spring in Action
+
+* **Youtube notes**
+
+## Spring Start Here
+### 7 Spring MVC
+##### 7.1.3 Tomcat
+* **Servlet container:** HTTP request/response translator for Java apps.
+* **Servlet:** Java object in the container registered to a specific path for handling HTTP request.
+
+#### 7.2 Spring Boot
+
+Without Spring Boot, Spring web app needed a lot of configurations for a servlet container & servlet instances.
+
+* **Dependency starters:** Grouping dependencies for a specific purpose.
+* **Autoconfiguration based on dependencies:** Based on the dependencies, use default configurations.
+
+##### 7.2.1 Initial Spring Boot from Spring.io
+* Main class w/ `@SpringBootApplication`
+* Spring Boot parent node in `pom.xml`. Set compatible versions for dependencies.
+* Spring Boot Maven plugin <build> <plugins> ... </plugins></build> tags in `pom.xml`
+* `application.properties`
+
+##### 7.2.2 Dependency starter
+* Capability-oriented groups of compatible dependencies. Group of dependencies you add to configure your app for a specific purpose. Add a particular capability needed and Spring Boot will add add the right dependencies.
+
+##### 7.2.3 Autoconfiguration by convention
+* convention-over-configuration principle. Based on the dependencies, default configurations used.
+
+#### 7.3 Spring MVC
+
+* `@Controller`: component of the web app that contains methods executed for a specific HTTP request
+* `@RequestMapping`: specifying the path. method needs to return the name of the document to send as a response.
+* Tomcat uses a servlet component known as the dispatcher servlet (front controller) as the entry point of the Spring web app.
+* Dispatcher servlet uses the handler mapping to find a controller action with `@RequestMapping` for the HTTP request. Then, the dispatcher servlet uses View resolver to get the view content.
