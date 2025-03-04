@@ -405,7 +405,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
 
 * **Book notes**
     * [Spring Start Here](#spring-start-here)
-        * Chapter [7](#7-spring-mvc), [8](#8-spring-boot--spring-mvc)
+        * Chapter [7](#7-spring-mvc), [8](#8-spring-boot--spring-mvc), [9](#9-web-scopes)
     * Spring Security in Action
     * Spring in Action
 
@@ -521,3 +521,23 @@ public String addProduct(
 
 }
 ```
+
+### 9 Web scopes
+* Web apps have more bean scopes.
+    * Request scope: Creates an instance of the bean class for every HTTP request. The instance exists only for that specific HTTP request.
+    * Session scope: The instance is in the server’s memory for the full HTTP session. Spring links the instance in the context with the client’s session.
+    * Application scope: The instance is unique in the app’s context while the app is running.
+
+#### 9.1 Request scope
+* New bean created for every request, so a lot of instances could get created. Not a big problem as long as the instances are short-lived by not having a time consuming logic.
+* Not prone to multithread related issues.
+* Put `@RequestScope` above class declaration.
+
+#### 9.2 Session scope
+* Each HTTP session will have different instances of session-scoped bean. During the same session, multiple requests from the same client will use the shared data throughout the session. `@SessionScope`
+* Concurrency issues possible from multiple concurrent requests from the same client changing the data.
+* Depending on the logic, requests could become dependent one on the other because of the session's statefulness.
+* `"redirect:/"` can be used to redirect to the main page.
+
+#### 9.3 Application scope
+* All different users share an application-scoped bean. Close to how a singleton works. `@ApplicationScope`
