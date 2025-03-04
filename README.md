@@ -5,7 +5,7 @@
 
 # Study Resources
 
-- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 9 of 15
+- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 11 of 15
 - [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
@@ -405,7 +405,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
 
 * **Book notes**
     * [Spring Start Here](#spring-start-here)
-        * Chapter [7](#7-spring-mvc), [8](#8-spring-boot--spring-mvc), [9](#9-web-scopes)
+        * Chapter [7](#7-spring-mvc), [8](#8-spring-boot--spring-mvc), [9](#9-web-scopes), [10](#10-rest-services)
     * Spring Security in Action
     * Spring in Action
 
@@ -541,3 +541,62 @@ public String addProduct(
 
 #### 9.3 Application scope
 * All different users share an application-scoped bean. Close to how a singleton works. `@ApplicationScope`
+
+### 10 REST services
+
+#### 10.1 REST services for data
+* The view resolver no longer used by the MVC dispatcher servlet.
+
+#### 10.2 Implementing a REST endpoint
+* Method level: `@ResponseBody`. Class level: `@RestController`. The annotations tell the dispatcher servlet that methods are returning HTTP response data and not a view name.
+
+#### 10.3 Managing the HTTP response
+##### 10.3.2 Setting the response status and headers
+* Use `ResponseEntity` class to customize HTTP response.
+
+```java
+@GetMapping("/france")
+public ResponseEntity<Country> france() {
+Country c = Country.of("France", 67);
+return ResponseEntity
+        .status(HttpStatus.ACCEPTED)
+        .header("continent", "Europe")
+        .body(c);
+}
+```
+
+##### 10.3.3 Using aspect for exceptions from REST controller
+
+* Create an aspect using REST controller advice to intercept exceptions to separate the exception logic from controllers’ methods.
+
+```java
+public class ErrorDetails {
+  private String message;
+}
+
+@RestControllerAdvice
+public class ExceptionControllerAdvice {
+
+    @ExceptionHandler(NotEnoughMoneyException.class)
+    public ResponseEntity<ErrorDetails> exceptionNotEnoughMoneyHandler() {
+        ErrorDetails errorDetails = new ErrorDetails();
+        return ResponseEntity
+                .badRequest()
+                .body(errorDetails);
+    }
+}
+```
+
+#### 10.4 Getting data from a request body
+* Use `@RequestBody` in method param.
+
+```java
+@PostMapping("/payment")
+public ResponseEntity<PaymentDetails> makePayment(
+    @RequestBody MyModel bodyDetails) {
+
+    return ResponseEntity
+            .status(HttpStatus.ACCEPTED)
+            .body(bodyDetails);
+}
+```
