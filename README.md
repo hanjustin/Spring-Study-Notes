@@ -403,11 +403,118 @@ Added section to accelerate my learning pace by postponing knowledge organizatio
 
 Listing of concepts I only know on the surface level that I don't even know where to organize in my head.
 
-* **Book notes**
-    * [Spring Start Here](#spring-start-here)
-        * Chapter [7](#7-spring-mvc), [8](#8-spring-boot--spring-mvc), [9](#9-web-scopes), [10](#10-rest-services)
-    * Spring Security in Action
-    * Spring in Action
+* **Book notes by chapter**
+
+<table>
+    <tr>
+        <th>Ch.</th>
+        <th><a href="#spring-start-here">Spring<br>Start Here</a></th>
+        <th>Spring<br>Security in Action</th>
+        <th>Spring<br>in Action</th>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>5</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>6</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>7</td>
+        <td><a href="#7-spring-mvc"><b>MVC</b></a></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>8</td>
+        <td><a href="#8-spring-boot--spring-mvc"><b>Boot & MVC</b></a></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>9</td>
+        <td><a href="#9-web-scopes"><b>Web scopes</b></a></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>10</td>
+        <td><a href="#10-rest-services"><b>REST services</b></a></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>11</td>
+        <td><a href="#11-rest-client"><b>REST client</b></a></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>12</td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>13</td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>14</td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>15</td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>16</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>17</td>
+        <td>x</td>
+        <td></td>
+        <td></td>
+    </tr>
+</table>
 
 * **Youtube notes**
 
@@ -600,3 +707,46 @@ public ResponseEntity<PaymentDetails> makePayment(
             .body(bodyDetails);
 }
 ```
+
+### 11 REST Client
+* **OpenFeign:** Recommended Spring Cloud tool. Use WebClient if using a reactive approach.
+* **RestTemplate:** For a new app, avoid RestTemplate and use OpenFeign instead for less boilerplate code.
+* **WebClient:** A reactive solution for calling REST endpoints as an alternative to RestTemplate.
+
+#### 11.1 Spring Cloud OpenFeign
+* Add `@EnableFeignClients`.
+* Add `@FeignClient` to an interface with methods for REST requests and the bean gets implemented. The context will inject the bean to where it's needed.
+* `application.properties` can be used to supply the base URL. The property `spring.cloud.openfeign.client.config.<interface-name>.url` is used for this. The <interface-name> is the value of the name attribute in the `@FeignClient`. With this practice, no need to recompile the code when running the app in different environments.
+
+```java
+@FeignClient(name = "payments",
+             url = "${name.service.url}")
+public interface PaymentsProxy {
+    @PostMapping("/payment")
+    Payment createPayment(
+        @RequestHeader String requestId,
+        @RequestBody Payment payment);
+}
+```
+
+#### 11.2 RestTemplate
+* Use `HttpEntity` to build request data headers & body.
+
+```java
+HttpHeaders headers = new HttpHeaders();
+HttpEntity<MyModel> httpEntity =
+  new HttpEntity<>(requestDataObj, headers);
+
+RestTemplate rest = new RestTemplate();
+ResponseEntity<MyModel> response =
+    rest.exchange("URL",
+        HttpMethod.POST,
+        httpEntity,
+        MyModel.class);
+
+MyModel responseBody = response.getBody();
+```
+
+#### 11.3 WebClient
+* Using pub/sub model, `Mono` class is used to create task dependencies.
+* `@Value("${name.service.url}")` to get the base URL from the properties file.
