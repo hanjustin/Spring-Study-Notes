@@ -5,7 +5,7 @@
 
 # Study Resources
 
-- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 11 of 15
+- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 13 of 15
 - [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
@@ -480,7 +480,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     </tr>
     <tr>
         <td>12</td>
-        <td></td>
+        <td><a href="#12-data-sources"><b>Data sources</b></a></td>
         <td></td>
         <td></td>
     </tr>
@@ -750,3 +750,60 @@ MyModel responseBody = response.getBody();
 #### 11.3 WebClient
 * Using pub/sub model, `Mono` class is used to create task dependencies.
 * `@Value("${name.service.url}")` to get the base URL from the properties file.
+
+### 12 Data sources
+#### 12.1 Data source
+* Component to manage database connections. Uses the JDBC (Java Database Connectivity) driver to connect to the DBMS. Improve performance by making new connections only when necessary and managing to reuse connections.
+* JDK provides JDBC abstractions. The abstraction is implemented by a JDBC driver connect to a specific DBMS. i.e. MySQL JDBC driver
+* HikariCP (Hikari connection pool) data source is commonly used.
+
+```java
+// Make new connection every time
+Connection con = DriverManager.getConnection(dbURL, username, password);
+```
+
+#### 12.2 JdbcTemplate
+* H2 database = in-memory database
+* `schemas.sql` in resources folder to define db structure. This file will contain structural SQL queries or data description language (DDL). Used for simple projects.
+* Boot adds `JdbcTemplate` bean automatically when seeing H2 dependency.
+
+```java
+@Repository
+public class MyOrderRepo {
+
+    public void storeOrder(Order order) {
+        String sql = "INSERT INTO orders VALUES (NULL, ?, ?)";
+        jdbc.update(sql, order.getProduct(), order.getPrice());
+    }
+
+    public List<Order> findAllOrders() {
+        String sql = "SELECT * FROM order";
+
+        RowMapper<Order> orderRowMapper = (r, i) -> {
+            Order rowOrder = new Order();
+            rowOrder.setId(r.getInt("id"));
+            rowOrder.setProduct(r.getString("product"));
+            rowOrder.setPrice(r.getBigDecimal("price"));
+            return rowOrder;
+        };
+
+        return jdbc.query(sql, orderRowMapper);
+    }
+}
+```
+
+#### 12.3 Data source configuration
+##### 12.3.1 application.properties
+```
+// For MySQL
+spring.datasource.url=url
+spring.datasource.username=<dbms username>
+spring.datasource.password=<dbms password>
+
+// Instruct Boot to run the “schema.sql” file
+spring.datasource.initialization-mode=always
+```
+
+##### 12.3.2 Custom dataSource bean
+* Boot adds default `DataSource` bean, but a data source with custom implementation can be added to the context.
+* Can create multiple data source objects, each with their own JdbcTemplate object associated to use multiple databases. Will need to use `@Qualifier`.
