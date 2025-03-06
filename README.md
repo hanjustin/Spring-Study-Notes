@@ -5,7 +5,7 @@
 
 # Study Resources
 
-- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 13 of 15
+- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 14 of 15
 - [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
@@ -486,7 +486,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     </tr>
     <tr>
         <td>13</td>
-        <td></td>
+        <td><a href="#13-transactions"><b>Transactions</b></a></td>
         <td></td>
         <td></td>
     </tr>
@@ -517,6 +517,10 @@ Listing of concepts I only know on the surface level that I don't even know wher
 </table>
 
 * **Youtube notes**
+
+## Misc
+
+* **User** --(interact)--> **Client** --(establish)--> **TCP Connection** --(with)--> **Servlet container** --(translate)--> **HTTP Request** --(sent)--> **Dispatcher servlet** --(use)--> **Handler Mapping** --(find)--> **Controller** --(delegate)--> **Service** --(utilize)--> **Repository** --(use)--> **Data sourcer** --(manage)--> **JDBC driver** --(connect)--> **DBMS** --(update)--> **DB**
 
 ## Spring Start Here
 ### 7 Spring MVC
@@ -807,3 +811,43 @@ spring.datasource.initialization-mode=always
 ##### 12.3.2 Custom dataSource bean
 * Boot adds default `DataSource` bean, but a data source with custom implementation can be added to the context.
 * Can create multiple data source objects, each with their own JdbcTemplate object associated to use multiple databases. Will need to use `@Qualifier`.
+
+### 13 Transactions
+#### 13.1 Transactions
+* Atomicity: Execute a set of multiple operations changing data altogether or not at all.
+* Commit: Succesful end of a transaction.
+* Rollback: Restoring data to the way it looked before the transaction.
+
+#### 13.2 AOP aspect for transactions
+* AOP aspect lies behind the scenes of a transaction.
+* `@Transactional` rolls back the transaction if the annotated method throws an exception.
+
+```java
+// simplistic representation of the transaction aspect logic
+try {
+    // Start transaction
+    // Call intercepted method
+    // Commit transaction
+} catch (RuntimeException e) {
+    // Rollback transaction
+}
+```
+
+#### 13.3 Using transactions
+* Mutable operations should be in a method with `@Transactional`
+* `@Transactional` can be applied on a method and class level. Method level's config overrides the one on the class.
+
+```java
+var rowObj = jdbc.queryForObject(selectSQL, new MyRowMapper(), id);
+
+public class MyRowMapper implements RowMapper<MyData> {
+
+    @Override
+    public MyData mapRow(ResultSet resultSet, int i)
+        throws SQLException {
+        MyData o = new MyData();
+        o.setSomeProperty(resultSet.getString("someProperty"));
+        return o;
+    }
+}
+```
