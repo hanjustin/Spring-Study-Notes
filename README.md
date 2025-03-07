@@ -5,7 +5,7 @@
 
 # Study Resources
 
-- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 14 of 15
+- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 15 of 15
 - [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
@@ -403,6 +403,8 @@ Added section to accelerate my learning pace by postponing knowledge organizatio
 
 Listing of concepts I only know on the surface level that I don't even know where to organize in my head.
 
+
+* [**Misc notes**](#misc-notes)
 * **Book notes by chapter**
 
 <table>
@@ -492,7 +494,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     </tr>
     <tr>
         <td>14</td>
-        <td></td>
+        <td><a href="#14-data-persistence-implementation"><b>Spring Data</b></a></td>
         <td></td>
         <td></td>
     </tr>
@@ -518,7 +520,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
 
 * **Youtube notes**
 
-## Misc
+## Misc Notes
 
 * **User** --(interact)--> **Client** --(establish)--> **TCP Connection** --(with)--> **Servlet container** --(translate)--> **HTTP Request** --(sent)--> **Dispatcher servlet** --(use)--> **Handler Mapping** --(find)--> **Controller** --(delegate)--> **Service** --(utilize)--> **Repository** --(use)--> **Data sourcer** --(manage)--> **JDBC driver** --(connect)--> **DBMS** --(update)--> **DB**
 
@@ -850,4 +852,28 @@ public class MyRowMapper implements RowMapper<MyData> {
         return o;
     }
 }
+```
+
+### 14 Data persistence implementation
+#### 14.1 Spring Data
+* Abstraction layer over persistence technologies.
+
+#### 14.2 Inside Spring Data
+* `Repository` is a marker interface. Rarely extended directly.
+* `CrudRepository` extends `Repository` for CRUD functionalities.
+* `PagingAndSortingRepository` extends `CrudRepository` with paging & sorting.
+* Independent sub-modules exist to support different persistence technologies. Module specific interfaces exist for added functionalities.
+
+#### 14.3 Spring Data JDBC
+* `@Id` to mark property as a primary key.
+* Method naming convention to create SQL query behind the scenes. Not recommended for complex queries.
+* `@Query` to specify a query and use `:paramName` to use parameter. Need `@Modifying` for modifying operation methods.
+```java
+public interface MyRepo extends CrudRepository<MyDataType, PrimaryKeyType>
+```
+
+```java
+List<Account> findAccountsByName(String name)
+// translates to:
+SELECT * FROM account WHERE name = ?
 ```
