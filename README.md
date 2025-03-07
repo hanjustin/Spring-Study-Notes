@@ -5,8 +5,8 @@
 
 # Study Resources
 
-- [ ] [Spring Start Here](https://www.manning.com/books/spring-start-here) - Reading Ch. 15 of 15
-- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action)
+- [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
+- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 1 of 20
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
 # Table of Contents
@@ -500,7 +500,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     </tr>
     <tr>
         <td>15</td>
-        <td></td>
+        <td><a href="#15-testing"><b>Testing</b></a></td>
         <td></td>
         <td></td>
     </tr>
@@ -877,3 +877,12 @@ List<Account> findAccountsByName(String name)
 // translates to:
 SELECT * FROM account WHERE name = ?
 ```
+
+### 15 Testing
+##### 15.2.1 Unit tests
+* `@DisplayName` to put test description.
+* `mock()` to create a mock, which is a method from Mockito. Control the mock’s behavior using `given()`.
+* `@Mock` for a mock to get inject to a property. `@InjectMocks` for object to test to get created with mocks injected.
+
+##### 15.2.1 Integration tests
+* `@MockBean` adds the mock to the application context, so it can be used elsewhere with `@Autowired`
