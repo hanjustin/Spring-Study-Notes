@@ -6,7 +6,7 @@
 # Study Resources
 
 - [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
-- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 1 of 20
+- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 2 of 18
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
 # Table of Contents
@@ -411,13 +411,13 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <th>Ch.</th>
         <th><a href="#spring-start-here">Spring<br>Start Here</a></th>
-        <th>Spring<br>Security in Action</th>
+        <th><a href="#spring-security-in-action">Spring<br>Security in Action</a></th>
         <th>Spring<br>in Action</th>
     </tr>
     <tr>
         <td>1</td>
         <td>x</td>
-        <td></td>
+        <td><a href="#1-security-today"><b>Security today</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -886,3 +886,11 @@ SELECT * FROM account WHERE name = ?
 
 ##### 15.2.1 Integration tests
 * `@MockBean` adds the mock to the application context, so it can be used elsewhere with `@Autowired`
+
+## Spring Security in Action
+### 1 Security today
+* Commonly intercept the requests and that ensure whoever makes the requests has permission to access protected resources
+* Through authentication, identify a user. Through authorization, identify the user's permissions.
+* A heap dump could find sensitive data in internal memory of an executing app.
+* Apply security in layers & use different practices for each layer.
+
