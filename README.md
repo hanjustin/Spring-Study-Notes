@@ -33,6 +33,8 @@
 * Tools
     * **[Maven](#maven)**
         * `pom.xml`, [Wrapper](#wrapper), [Build lifecycles](#build-lifecycles), [Directory layout](#directory-layout)
+    * **cURL**
+        * `-u`
 
 # Spring Boot
 * Opinionated framework on top of Spring framework with default configurations for a quick backend development.
@@ -395,6 +397,15 @@ Utility script to run the Maven project without having Maven installed. Ensures 
 * `src/test/java` - Test sources
 * `target` - Contains all the final products from the build
 
+## cURL
+
+### -u
+For server authentication, provide the username & password.
+
+```
+curl -u user:secret https://example.com
+```
+
 ---
 
 # Unorganized Notes
@@ -423,7 +434,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>2</td>
         <td>x</td>
-        <td></td>
+        <td><a href="#2-high-level"><b>High level</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -894,3 +905,76 @@ SELECT * FROM account WHERE name = ?
 * A heap dump could find sensitive data in internal memory of an executing app.
 * Apply security in layers & use different practices for each layer.
 
+### 2 High level
+#### 2.1 Defaults
+* Two default authentication mechanisms: HTTP Basic and Form Login. For HTTP Basic authentication, use `Authorization` header and attach prefix `Basic` to the value followed by the Base64 encoding of `<username>:<password>` string. Base64 is only an encoding method for the convenience of the transfer, so doesn’t offer confidentiality of the credentials.
+* `@SpringBootApplication` marks package to scan. To scan other packages, use `@ComponentScan`.
+
+#### 2.2 Spring Security Flow
+1. `Authentication filter` delegates the request to the authentication manager.
+2. `Authentication manager` uses `authentication provider` to process authentication.
+3. `Authentication provider` implements the authentication logic by using `UserDetailsService` & `PasswordEncoder`
+4. `UserDetailsService` implements user details management responsibility. Authorities are actions that you allow a user to do in the context of the application.
+5. `PasswordEncoder` implements password management. It encodes a password (usually with an encryption or a hashing algorithm) and verifies if the password matches an existing encoding
+6. `Security context` keeps the authentication data until the action ends. 
+
+#### 2.3 Customization
+##### 2.3.1 User details management
+* Create methods with `@Bean` to return `UserDetailsService` & `PasswordEncoder`.
+
+##### 2.3.2 Endpoint level authorization customization.
+```java
+@Configuration
+public class ProjectConfig {
+
+    private final CustomAuthenticationProvider authenticationProvider;
+
+    public ProjectConfig(
+    CustomAuthenticationProvider authenticationProvider) {
+        this.authenticationProvider = authenticationProvider;
+    }
+
+    @Bean
+    SecurityFilterChain configure(HttpSecurity http)
+        throws Exception {
+
+        // Use HTTP Basic auth
+        http.httpBasic(Customizer.withDefaults());
+
+        http.authenticationProvider(authenticationProvider);
+
+        // Require authentication for all requests
+        http.authorizeHttpRequests(
+            c -> c.anyRequest().authenticated()
+        );
+
+        var user = User.withUsername("john")
+                        .password("12345")
+                        .authorities("read")
+                        .build();
+        
+        var userDetailsService =
+            new InMemoryUserDetailsManager(user);
+        http.userDetailsService(userDetailsService);
+
+        return http.build();
+    }
+}
+```
+
+##### 2.3.4 AuthenticationProvider
+```java
+@Component
+public class CustomAuthenticationProvider
+    implements AuthenticationProvider {
+
+    @Override
+    public Authentication authenticate(
+        Authentication authentication)
+        throws AuthenticationException {
+
+            // Custom auth logic
+            // Using UserDetailsService and PasswordEncoder
+    }
+}
+```
