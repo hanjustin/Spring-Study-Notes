@@ -6,7 +6,7 @@
 # Study Resources
 
 - [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
-- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 2 of 18
+- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 4 of 18
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
 # Table of Contents
@@ -440,7 +440,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>3</td>
         <td>x</td>
-        <td></td>
+        <td><a href="#3-managing-users"><b>Managing users</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -978,3 +978,65 @@ public class CustomAuthenticationProvider
     }
 }
 ```
+
+### 3 Managing users
+#### 3.1 Auth interfaces
+* `UserDetails`: describe users.
+* `GrantedAuthority`: actions that the user can execute.
+* `UserDetailsService`: retrieve user by username.
+* `UserDetailsManager`: add actions to modify users & passwords to `UserDetailsService`.
+
+#### 3.2 UserDetails
+* Only `getUsername()` & `getPassword()` methods from `UserDetails` are used for authentication.
+* `GrantedAuthority` represents a privilege granted to the user.
+```java
+@Entity
+public class User {
+    @Id
+    private int id;
+    // Omitted code for username, password & authority properties
+}
+
+public class SecurityUser implements UserDetails {
+    private final User user;
+
+    public SecurityUser(User user) {
+        this.user = user;
+    }
+
+    // Omitted code for UserDetails
+}
+```
+
+#### 3.3 Managing users
+##### 3.3.1 UserDetailsService
+```java
+public class MyService implements UserDetailsService {
+
+    @Override
+    public UserDetails loadUserByUsername(String username)
+        throws UsernameNotFoundException {
+            // Find user from
+            // a database, an external system, a vault, etc.
+    }
+}
+
+public class MyUser implements UserDetails {
+}
+```
+
+##### 3.3.3 UserDetailsManager
+```java
+public interface UserDetailsManager extends UserDetailsService {
+  void createUser(UserDetails user);
+  void updateUser(UserDetails user);
+  void deleteUser(String username);
+  void changePassword(String oldPassword, String newPassword);
+  boolean userExists(String username);
+}
+```
+
+* `JdbcUserDetailsManager` implementation expects `username`, `password`, and `enabled` columns in the `users` table.
+* In the `/resources folder`, put
+    * `schema.sql` for queries such as creating, altering, or dropping tables to structure the database
+    * `data.sql` for queries such as INSERT, UPDATE, or DELETE to use the data inside the tables
