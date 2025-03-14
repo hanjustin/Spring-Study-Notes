@@ -6,7 +6,7 @@
 # Study Resources
 
 - [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
-- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 5 of 18
+- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 6 of 18
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
 # Table of Contents
@@ -452,7 +452,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>5</td>
         <td>x</td>
-        <td></td>
+        <td><a href="#5-security-filters"><b>Security filters</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -1115,3 +1115,51 @@ public class Sha512PasswordEncoder implements PasswordEncoder {
 ##### 4.2.2 Encryptors
 * Implements an encryption algorithm to encrypt and decrypt data.
 * `TextEncryptor` manages data as a string. `BytesEncryptor` is more generic using data as a byte array
+
+### 5 Security filters
+* Filters form a chain of responsibilities.
+
+#### 5.1 Implementing filters
+* For HTTP filters, override `Filter` interface's `doFilter()` which receives these parameters:
+    * **ServletRequest:** Represents the HTTP request to retrieve details about the request.
+    * **ServletResponse:** Represents the HTTP response to alter the response.
+    * **FilterChain:** Represents the chain of filters to forward the request to the next filter.
+
+* Depending on the configurations, the filter chain changes.
+* Each filter has an order number. If multiple filters have the same order value, the order in which they are called is not defined. Spring provides some filters with default order numbers:
+    * **BasicAuthenticationFilter:** takes care of HTTP Basic authentication, if present.
+    * **CsrfFilter:** takes care of cross-site request forgery (CSRF) protection, which we’ll discuss in chapter 9.
+    * **CorsFilter:** takes care of cross-origin resource sharing (CORS) authorization rules.
+
+#### 5.2 Adding to the filter chain
+```java
+@Configuration
+public class MyConfig {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    throws Exception {
+        // http.addFilterBefore(newFilter, beforeThis)
+        // http.addFilterAfter(newFilter, afterThis)
+        // http.addFilterAt(newFilter, besideThis)
+        // NOTE: addFilterAt() does not replace the existing filter,
+        //       so the order of execution is undefined.
+    }
+}
+
+public class MyFilter implements Filter {
+
+    @Override
+    public void doFilter(
+        ServletRequest servletRequest,
+        ServletResponse servletResponse,
+        FilterChain filterChain)
+        throws IOException, ServletException {
+     
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
+#### 5.5 Spring provided filters
+* `GenericFilterBean`: allows using `web.xml` to initialize parameters.
+* `OncePerRequestFilter`: makes `doFilter()` is executed only one time per request. A filter could be called multiple times from a request without this.
