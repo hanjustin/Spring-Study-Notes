@@ -6,7 +6,7 @@
 # Study Resources
 
 - [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
-- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 4 of 18
+- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 5 of 18
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
 # Table of Contents
@@ -446,7 +446,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>4</td>
         <td>x</td>
-        <td></td>
+        <td><a href="#4-managing-passwords"><b>Managing passwords</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -1040,3 +1040,78 @@ public interface UserDetailsManager extends UserDetailsService {
 * In the `/resources folder`, put
     * `schema.sql` for queries such as creating, altering, or dropping tables to structure the database
     * `data.sql` for queries such as INSERT, UPDATE, or DELETE to use the data inside the tables
+
+### 4 Managing passwords
+#### 4.1 Password encoders
+##### 4.1.2 PasswordEncoder
+* String returned by `encode()` should be verifiable with `matches()`
+
+```java
+public class Sha512PasswordEncoder implements PasswordEncoder {
+  
+    @Override
+    public String encode(CharSequence rawPassword) {
+        return hashWithSHA512(rawPassword.toString());
+    }
+
+    @Override
+    public boolean matches(
+    CharSequence rawPassword, String encodedPassword) {
+        String hashedPassword = encode(rawPassword);
+        return encodedPassword.equals(hashedPassword);
+    }
+
+    // Omitted code
+}
+```
+
+##### 4.1.3 Provided implementations
+* **NoOpPasswordEncoder:** No encoding. Keeps passwords in cleartext. Not for productions.
+
+* **StandardPasswordEncoder:** Uses SHA-256 hashing. Deprecated because SHA-256 isn't considered strong enough anymore. Can provide a secret used in the hashing process.
+
+    ```java
+    PasswordEncoder p = new StandardPasswordEncoder();
+    PasswordEncoder p = new StandardPasswordEncoder("secret");
+    ```
+
+* **Pbkdf2PasswordEncoder:** A slow-hashing function that performs an HMAC as many times as specified by an iterations argument. The longer the hash, the more powerful the password (the same is true for the hash width).The more iterations, the more resources your application consumes. Make a wise compromise between the resources consumed for generating the hash and the needed strength of the encoding.
+
+    ```java
+    PasswordEncoder p =
+    new Pbkdf2PasswordEncoder("key", numOfIterations, hashSize, hashWidth);
+    ```
+
+* **BCryptPasswordEncoder:** Uses a bcrypt strong hashing function to encode the password.
+
+* **SCryptPasswordEncoder:** Uses a scrypt hashing function to encode the password.
+
+##### 4.1.4 DelegatingPasswordEncoder
+* This object delegates to other `PasswordEncoder` when there are multiple password encoders to choose from. Delegates based on the prefix of the password such as `{bcrypt}` or `{scrypt}`
+
+#### 4.2 Spring Security Crypto module
+* For cryptography, Spring provides Spring Security Crypto module (SSCM).
+
+##### 4.2.1 Key generators
+* Generate keys for hashing or encryption algorithms
+
+* `BytesKeyGenerator`
+    ```java
+    // Keys are unique for each call of generateKey() 
+    BytesKeyGenerator keyGen = KeyGenerators.secureRandom(16);
+
+    // The same key generated for each call of generateKey()
+    BytesKeyGenerator keyGen = KeyGenerators.shared(16);
+    byte[] key = keyGen.generateKey();
+    ```
+
+* `StringKeyGenerator`
+    ```java
+    StringKeyGenerator keyGenerator = KeyGenerators.string();
+    String salt = keyGenerator.generateKey();
+    ```
+    * String key as a salt value for a hashing or encryption algorithm. The generator creates an 8-byte key, and it encodes that as a hexadecimal string.
+
+##### 4.2.2 Encryptors
+* Implements an encryption algorithm to encrypt and decrypt data.
+* `TextEncryptor` manages data as a string. `BytesEncryptor` is more generic using data as a byte array
