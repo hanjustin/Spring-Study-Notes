@@ -464,7 +464,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>7</td>
         <td><a href="#7-spring-mvc"><b>MVC</b></a></td>
-        <td></td>
+        <td><a href="#7-endpoint-authorization"><b>Endpoint authorization</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -1309,3 +1309,38 @@ SecurityFilterChain configure(HttpSecurity http)
     return http.build();
 }
 ```
+
+### 7 Endpoint authorization
+#### 7.1 Restricting access
+* `denyAll()` or `permitAll()`
+
+##### 7.1.1 Based on authorities
+* **`hasAuthority()`:** Requires specified authority.
+* **`hasAnyAuthority()`:** Requires at least one of the specified authorities.
+* **`access()`:** Requires `AuthorizationManager`. Spring provides `SpEL` (Spring Expression Language) that can be used with `WebExpressionAuthorizationManager`.
+
+```java
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http)
+throws Exception {
+
+    String SpEL =
+    """hasAuthority('read') and
+    !hasAuthority('delete')
+    """;
+
+    http.authorizeHttpRequests(
+        c -> c.anyRequest()
+            .access(new WebExpressionAuthorizationManager(SpEL));
+    );
+
+    return http.build();
+}
+```
+
+##### 7.1.2 Based on roles
+* Roles are similar to authorities. Name should start with the `ROLE_` prefix.
+`hasAuthority('ROLE_ADMIN')` is similar to `hasRole('ADMIN')` because the `ROLE_` prefix gets added automatically. When using `authorities()`, include the `ROLE_` prefix. When using `roles()`, do not include the `ROLE_` prefix.
+* **`hasRole()`:** Requires specified role.
+* **`hasAnyRole()`:** Requires at least one of the specified roles.
+* **`access()`:** Requires `AuthorizationManager`. Spring provides `SpEL` (Spring Expression Language) that can be used with `WebExpressionAuthorizationManager`.
