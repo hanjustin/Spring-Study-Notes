@@ -6,7 +6,7 @@
 # Study Resources
 
 - [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
-- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 6 of 18
+- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 7 of 18
 - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
 # Table of Contents
@@ -458,7 +458,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>6</td>
         <td>x</td>
-        <td></td>
+        <td><a href="#6-authentication"><b>Authentication</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -534,6 +534,10 @@ Listing of concepts I only know on the surface level that I don't even know wher
 ## Misc Notes
 
 * **User** --(interact)--> **Client** --(establish)--> **TCP Connection** --(with)--> **Servlet container** --(translate)--> **HTTP Request** --(sent)--> **Dispatcher servlet** --(use)--> **Handler Mapping** --(find)--> **Controller** --(delegate)--> **Service** --(utilize)--> **Repository** --(use)--> **Data sourcer** --(manage)--> **JDBC driver** --(connect)--> **DBMS** --(update)--> **DB**
+
+* HTTP Request -> HTTP Filter -> Auth Manager -> Auth Provider -> UserDetailsService & PasswordEncoder -> 401 Unauthorized Or SecurityContext
+
+* Authentication filter -> Authorization filter
 
 ## Spring Start Here
 ### 7 Spring MVC
@@ -1163,3 +1167,145 @@ public class MyFilter implements Filter {
 #### 5.5 Spring provided filters
 * `GenericFilterBean`: allows using `web.xml` to initialize parameters.
 * `OncePerRequestFilter`: makes `doFilter()` is executed only one time per request. A filter could be called multiple times from a request without this.
+
+### 6 Authentication
+* Authentication can be based on username/password, SMS code, or fingerprint.
+
+##### 6.1.1 Auth request event
+* **Principal:** The user making auth access to the application is called a principal.
+
+```java
+public interface Authentication extends Principal, Serializable {
+    Collection<? extends GrantedAuthority> getAuthorities();
+    Object getCredentials();
+    Object getDetails();
+    Object getPrincipal();
+    boolean isAuthenticated();
+    void setAuthenticated(boolean isAuthenticated)
+    throws IllegalArgumentException;
+}
+```
+
+##### 6.1.3 AuthenticationProvider
+* `AuthenticationManager` uses `AuthenticationProvider`'s `supports()` to determine which provider to use.
+* `authenticate()` should return fully authenticated `Authentication` instance if success.
+
+```java
+@Component
+public class MyAuthProvider implements AuthenticationProvider {
+    
+    // Omitted properties & constructor
+
+    @Override
+    public Authentication authenticate(Authentication authentication) {
+        // Use UserDetailsService & PasswordEncoder
+        // Custom auth logic
+    }
+}
+```
+
+#### 6.2 SecurityContext
+* `Authentication` instance gets stored in `SecurityContext` after authentication.
+* `SecurityContextHolder` manages `SecurityContext`. With `SecurityContextHolder.setStrategyName()` or property `spring.security.strategy`, thread options can be set to:
+    * **MODE_THREADLOCAL:** Each thread to have its own security context and the details in the context will not be copied to a new context. Common for thread-per-request web app. (Not applicable to reactive approaches)
+    * **MODE_INHERITABLETHREADLOCAL:** Similar to `MODE_THREADLOCAL`, but also allows copying and inheriting the context when `@Async` method creates a new context for a new thread. (Not applicable when using threads not managed by the framework)
+    * **MODE_GLOBAL:** All threads see the same security context instance. (Not thrad safe)
+
+```java
+// Boot injects auth object
+@GetMapping("/hello")
+public String hello(Authentication a) {
+  return "Hello, " + a.getName() + "!";
+}
+```
+
+##### 6.2.4 Self-managed threads
+* For self-managed threads not managed by Spring, use `DelegatingSecurityContextRunnable` or `DelegatingSecurityContextCallable<T>` to represent tasks executed asynchronously and to copy the current security context to the new thread's context.
+
+```java
+@GetMapping("/hello")
+public String hello() throws Exception {
+    Callable<String> task = () -> {
+        SecurityContext context = SecurityContextHolder.getContext();
+        return context.getAuthentication().getName();
+    };
+
+    ExecutorService e = Executors.newCachedThreadPool();
+    try {
+        // Without this, the context doesn't get copied.
+        var contextTask = new DelegatingSecurityContextCallable<>(task);
+        return "Hello, " + e.submit(contextTask).get() + "!";
+    } finally {
+        e.shutdown();
+    }
+}
+```
+
+* Alternatively, the security context propagation can happen through the management of the thread pool instead of managing the task itself. `DelegatingSecurityContextExecutor` or `DelegatingSecurityContextExecutorService` can be used.
+
+```java
+@GetMapping("/hello")
+public String hello() throws Exception {
+    Callable<String> task = () -> {
+        SecurityContext context = SecurityContextHolder.getContext();
+        return context.getAuthentication().getName();
+    };
+
+    ExecutorService e = Executors.newCachedThreadPool();
+    e = new DelegatingSecurityContextExecutorService(e);
+    try {
+        // Notice normal task can be passed.
+        return "Hello, " + e.submit(task).get() + "!";
+    } finally {
+        e.shutdown();
+    }
+}
+```
+
+#### 6.3 Customizing authentications
+```java
+/* Configuration for failed authentications
+ * Setting custom realmName and using custom entry point
+ */
+
+@Bean
+SecurityFilterChain configure(HttpSecurity http)
+    throws Exception {
+
+    http.httpBasic(c -> {
+        c.realmName("OTHER");
+        c.authenticationEntryPoint(new CustomEntryPoint());
+    });
+
+    return http.build();
+}
+
+public class CustomEntryPoint
+    implements AuthenticationEntryPoint {
+    
+    @Override
+    public void commence(
+        HttpServletRequest httpServletRequest,
+        HttpServletResponse httpServletResponse,
+        AuthenticationException e)
+        throws IOException, ServletException {
+
+        // Do custom stuff
+    }
+}
+```
+
+* `formLogin()` gives a default login page.
+* Custom success logic can be implemented using `AuthenticationSuccessHandler`'s `onAuthenticationSuccess()`.
+* Custom failure logic can be implemented using `AuthenticationFailureHandler`'s `onAuthenticationFailure()`.
+
+```java
+@Bean
+SecurityFilterChain configure(HttpSecurity http)
+    throws Exception {
+
+    http.formLogin(c -> c.defaultSuccessUrl("/home", true));
+
+    return http.build();
+}
+```
