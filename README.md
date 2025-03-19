@@ -4,10 +4,10 @@
 ---
 
 # Study Resources
-
-- [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
-- [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 7 of 18
-- [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
+* **Books**
+    - [x] [Spring Start Here](https://www.manning.com/books/spring-start-here) - (Done)
+    - [ ] [Spring Security in Action](https://www.manning.com/books/spring-security-in-action) - Reading Ch. 9 of 18
+    - [ ] [Spring in Action](https://www.manning.com/books/spring-in-action-sixth-edition)
 
 # Table of Contents
 * Spring Boot
@@ -410,7 +410,7 @@ curl -u user:secret https://example.com
 
 # Unorganized Notes
 
-Added section to accelerate my learning pace by postponing knowledge organization effort to reduce my inefficient usage of time. To go fast and then revisit & re-organize learned concepts later.
+Added section to accelerate my learning pace by postponing knowledge organization effort to reduce my inefficient usage of time. Delaying organizing and moving notes to **Table of Contents** section. To go fast and then revisit & re-organize learned concepts later.
 
 Listing of concepts I only know on the surface level that I don't even know where to organize in my head.
 
@@ -428,7 +428,7 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>1</td>
         <td>x</td>
-        <td><a href="#1-security-today"><b>Security today</b></a></td>
+        <td><a href="#1-security-today"><b>Security intro</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -440,13 +440,13 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>3</td>
         <td>x</td>
-        <td><a href="#3-managing-users"><b>Managing users</b></a></td>
+        <td><a href="#3-managing-users"><b>Managing <br>users</b></a></td>
         <td></td>
     </tr>
     <tr>
         <td>4</td>
         <td>x</td>
-        <td><a href="#4-managing-passwords"><b>Managing passwords</b></a></td>
+        <td><a href="#4-managing-passwords"><b>Managing <br>passwords</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -464,13 +464,13 @@ Listing of concepts I only know on the surface level that I don't even know wher
     <tr>
         <td>7</td>
         <td><a href="#7-spring-mvc"><b>MVC</b></a></td>
-        <td><a href="#7-endpoint-authorization"><b>Endpoint authorization</b></a></td>
+        <td><a href="#7-authorityrole-authorization"><b>Authority/role <br>authorization</b></a></td>
         <td></td>
     </tr>
     <tr>
         <td>8</td>
         <td><a href="#8-spring-boot--spring-mvc"><b>Boot & MVC</b></a></td>
-        <td></td>
+        <td><a href="#8-request-matching"><b>Request matching</b></a></td>
         <td></td>
     </tr>
     <tr>
@@ -1310,7 +1310,7 @@ SecurityFilterChain configure(HttpSecurity http)
 }
 ```
 
-### 7 Endpoint authorization
+### 7 Authority/role authorization
 #### 7.1 Restricting access
 * `denyAll()` or `permitAll()`
 
@@ -1344,3 +1344,30 @@ throws Exception {
 * **`hasRole()`:** Requires specified role.
 * **`hasAnyRole()`:** Requires at least one of the specified roles.
 * **`access()`:** Requires `AuthorizationManager`. Spring provides `SpEL` (Spring Expression Language) that can be used with `WebExpressionAuthorizationManager`.
+
+### 8 Request matching
+* Use `requestMatchers()` with **path expressions** to match a group of paths.
+    * `/a/*`: `*` replaces one pathname. Matches `/a/b` or `/a/c`, but not `a/b/c`
+    * `/a/**`: `**` replaces multiple pathname. All `/a`, `/a/b` and `/a/b/c` matches.
+    * `/a/{param:regex}`: Matches path starting with `/a` and the parameter matches the regex.
+* For more complex requirements, use `regexMatchers()` for regex.
+
+```java
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http)
+    throws Exception {
+    http.httpBasic(Customizer.withDefaults());
+
+    http.authorizeHttpRequests(
+      c -> c.requestMatchers("/hello").hasRole("ADMIN")
+
+            // Authentication NOT required for other requests
+            .anyRequest().permitAll()
+
+            // Authentication required for other requests
+            .anyRequest().authenticated()
+    );
+
+    return http.build();
+}
+```
